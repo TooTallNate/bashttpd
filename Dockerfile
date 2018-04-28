@@ -1,6 +1,4 @@
-FROM ubuntu
-RUN apt-get update && apt-get install -y socat
-WORKDIR /app
+FROM alpine:3.6
+RUN apk add --no-cache bash socat
 COPY . .
-EXPOSE 8080
-CMD socat TCP4-LISTEN:8080,fork EXEC:$PWD/bashttpd
+CMD ["socat", "TCP4-LISTEN:8080,fork", "EXEC:/bashttpd"]
