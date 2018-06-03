@@ -237,6 +237,33 @@ serve_static_string() {
    send_response_ok_exit <<< "$1"
 }
 
+# https://stackoverflow.com/a/37840948/376773
+decode_url() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+
+get_request_header() {
+  local name="$1"
+  shopt -s nocasematch
+  for header in "${REQUEST_HEADERS[@]}"; do
+    if [[ "${header}" == "${name}:"* ]]; then
+      local index="$((${#name} + 2))"
+      echo "${header:$index}"
+      return 0
+    fi
+  done
+
+  # If we got to here then the header was not found
+  return 1
+}
+
+get_request_body() {
+  local length="$(get_request_header "content-length")"
+  if [ ! -z "${length}" ]; then
+    recv "Reading ${length} byte request body"
+    head -c "${length}"
+  fi
+}
+
+
 on_uri_match() {
    local regex=$1
    shift
