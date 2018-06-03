@@ -260,9 +260,36 @@ get_request_body() {
   if [ ! -z "${length}" ]; then
     recv "Reading ${length} byte request body"
     head -c "${length}"
+  else
+    local encoding="$(get_request_header "transfer-encoding")"
+    recv "encoding: ${encoding}"
+    if [ "${encoding}" = "chunked" ]; then
+      while IFS='' read -r line; do
+        line=${line%%$'\r'}
+        recv "$line"
+
+        length="$(printf "%d" "0x${line%%$'\n'}")"
+        recv "Reading ${length} byte chunk"
+        #head -c "${length}"
+        dd bs=1 count="${length}" 2>/dev/null
+
+        # The next two bytes are supposed to be '\r\n'
+        recv "Reading 2 byte end"
+        # TODO: add verification
+        #head -c "2" > /dev/null
+        dd bs=1 count=2 of=/dev/null 2>/dev/null
+
+        [ "${length}" -eq 0 ] && break
+        recv "Done with chunk"
+      done
+
+      recv "Done reading chunked body"
+    #else
+    #  recv "Reading entire request body"
+    #  cat
+    fi
   fi
 }
-
 
 on_uri_match() {
    local regex=$1
