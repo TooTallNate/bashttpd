@@ -137,9 +137,9 @@ send_response() {
       send "$i"
    done
    send
-   while read -r line; do
-      send "$line"
-   done
+
+   # Flush response body, also printing it to our stderr
+   tee >(while IFS='' read -r line; do echo "> $line" >&2; done)
 }
 
 send_response_ok_exit() { send_response 200; exit 0; }
