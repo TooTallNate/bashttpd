@@ -263,9 +263,6 @@ read -r REQUEST_METHOD REQUEST_URI REQUEST_HTTP_VERSION <<<"$line"
 [ -n "$REQUEST_HTTP_VERSION" ] \
    || fail_with 400
 
-# Only GET is supported at this time
-[ "$REQUEST_METHOD" = "GET" ] || fail_with 405
-
 declare -a REQUEST_HEADERS
 
 while read -r line; do
