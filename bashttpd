@@ -132,7 +132,7 @@ declare -a HTTP_RESPONSE=(
 
 send_response() {
    local code=$1
-   send "HTTP/1.0 $1 ${HTTP_RESPONSE[$1]}"
+   send "HTTP/1.0 ${code} ${HTTP_RESPONSE[${code}]}"
    for i in "${RESPONSE_HEADERS[@]}"; do
       send "$i"
    done
