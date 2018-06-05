@@ -1,7 +1,7 @@
 FROM alpine:3.6
 RUN addgroup -g 1000 -S bashttpd && \
     adduser -u 1000 -S bashttpd -G bashttpd
-RUN apk add --no-cache bash socat
+RUN apk add --no-cache bash file socat
 WORKDIR /etc/bashttpd
 COPY bashttpd /usr/bin/
 COPY bashttpd.conf .
