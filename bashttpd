@@ -196,7 +196,7 @@ flush_response() {
   local buf
   while true; do
     local buf="$(read_bytes "${#CONTROL_SEQUENCE}")"
-    recv "buf: $(printf "%x " "'${buf}") ${#buf}"
+    #recv "buf: $(printf "%x " "'${buf}") ${#buf}"
     if [ "${buf}" = "${CONTROL_SEQUENCE}" ]; then
       IFS='' read -r line
       line=${line%%$'\r'}
@@ -348,7 +348,7 @@ get_request_body() {
     if [ "${encoding}" = "chunked" ]; then
       while IFS='' read -r line; do
         line=${line%%$'\r'}
-        recv "$line"
+        #recv "$line"
 
         length="$(printf "%d" "0x${line%%$'\n'}")"
         recv "Reading ${length} byte chunk"
