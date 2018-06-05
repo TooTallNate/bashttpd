@@ -113,11 +113,8 @@ send() { echo ">" "$@" >&2;
 [[ $UID = 0 ]] && warn "It is not recommended to run bashttpd as root."
 
 read_bytes() {
-  dd bs="$1" count=1 2>/dev/null
-
-  # Alternative
-  #LANG=C IFS= read -r -d '' -n "$1" char
-  #printf "%s" "${char}"
+  LANG=C IFS= read -r -d '' -n "$1" char
+  printf "%s" "${char}"
 }
 
 DATE=$(date +"%a, %d %b %Y %H:%M:%S %Z")
@@ -351,19 +348,21 @@ get_request_body() {
         #recv "$line"
 
         length="$(printf "%d" "0x${line%%$'\n'}")"
-        recv "Reading ${length} byte chunk"
-        read_bytes "${length}"
 
-        # The next two bytes are supposed to be '\r\n'
-        #recv "Reading 2 byte end"
-        # TODO: add verification
-        read_bytes 2 > /dev/null
+        if [ "${length}" -gt 0 ]; then
+          recv "Reading ${length} byte chunk"
+          read_bytes "${length}"
 
-        [ "${length}" -eq 0 ] && break
-        recv "Done with chunk"
+          # The next two bytes are supposed to be '\r\n'
+          #recv "Reading 2 byte end"
+          # TODO: add verification
+          read_bytes 2 > /dev/null
+          recv "Done with chunk"
+        else
+          recv "Done reading chunked body"
+          break
+        fi
       done
-
-      recv "Done reading chunked body"
     fi
   fi
 }
