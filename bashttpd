@@ -382,11 +382,17 @@ unconditionally() {
 exec > >(flush_response)
 __bashttpd_flush_response_pid=$!
 
+# The user's stdin is the HTTP request body
+exec 3< <(get_request_body)
+exec <&3
+
 # Let the user script do its work
 source "${conf}"
 
-# At this point, the script is expected to have flushed all its output
-exec >&-
+# At this point, the script is expected to have flushed all its output.
+# Stdout needs to be closed in order for `flush_response` to receive EOF.
+# Also close fd 3 so that `get_request_body` exits cleanly.
+exec >&- 3<&-
 
 # Wait for the HTTP response to be fully sent, otherwise `socat`
 # will close the connection before it's finished being dumped
