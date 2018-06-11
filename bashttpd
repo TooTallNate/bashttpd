@@ -6,10 +6,14 @@
 #
 # Original author: Avleen Vig, 2012
 # Reworked by:     Josh Cartwright, 2012
+# Reworked by:     Nathan Rajlich, 2018
+
+# If running as `root`, then downgrade to `nobody` first
+if [ "$EUID" -eq 0 ]; then
+  exec sudo -u nobody "$0" "$@"
+fi
 
 conf="${BASHTTPD_CONFIG-bashttpd.conf}"
-
-warn() { echo "WARNING:" "$@" >&2; }
 
 [ -r "${conf}" ] || {
    cat > "${conf}" <<'EOF'
@@ -102,15 +106,14 @@ unconditionally serve_static_string 'Hello, world!  You can configure bashttpd b
 # is invoked with the arguments '/say_hello_to/Josh' 'Josh',
 # (${BASH_REMATCH[0]} is always the full match)
 EOF
-   warn "Created bashttpd.conf using defaults.  Please review it/configure before running bashttpd again."
+   echo "Created bashttpd.conf using defaults."
+   echo "Please review it/configure before running bashttpd again."
    exit 1
 }
 
 recv() { echo "<" "$@" >&2; }
 send() { echo ">" "$@" >&2;
          printf "%s\r\n" "$*"; }
-
-[[ $UID = 0 ]] && warn "It is not recommended to run bashttpd as root."
 
 read_bytes() {
   LANG=C IFS= read -r -d '' -n "$1" char
