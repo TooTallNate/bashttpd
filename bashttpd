@@ -343,8 +343,6 @@ serve_dir_with_ls() {
 }
 
 serve_dir() {
-  local dir=$1
-
   # If `tree` is installed, use that for pretty output.
   if which tree &>/dev/null; then
     serve_dir_with_tree "$@"
